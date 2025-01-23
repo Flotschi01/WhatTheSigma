@@ -1,0 +1,9 @@
+implement item system
+
+
+
+
+
+
+optimizing 
+menu fix when esc=>menu=>play game freeze
