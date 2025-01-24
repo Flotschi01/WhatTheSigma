@@ -764,6 +764,7 @@ GameObject:
   - component: {fileID: 219586316}
   - component: {fileID: 219586317}
   - component: {fileID: 219586318}
+  - component: {fileID: 219586319}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -874,6 +875,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PreviewMaterial: {fileID: 2100000, guid: 0e406cb83b9bd3c4a8d8308b3ac76fc4, type: 2}
+--- !u!114 &219586319
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 219586312}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 333cfb0d94664c11a7b669922b4738d1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxInteractDistance: 3
 --- !u!1 &382768332
 GameObject:
   m_ObjectHideFlags: 0
@@ -5843,7 +5857,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e1395f51c273944aa0739e3f963f0a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxInteractDistance: 3
   pauseMenu: {fileID: 2122054828}
   buildMenu: {fileID: 635981734}
   inventory: {fileID: 2036012600}

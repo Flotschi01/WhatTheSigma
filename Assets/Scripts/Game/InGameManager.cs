@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using Objects.Abstracts;
+using Player;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -11,16 +12,17 @@ using UnityEngine.SceneManagement;
 public class InGameManager : MonoBehaviour
 {
     // Start is called before the first frame update
-    public float maxInteractDistance;
     public GameObject pauseMenu;
     public GameObject buildMenu;
     public GameObject inventory;
     private PlayerCharControler m_playerChar;
-    private List<Item> m_Inventory = new List<Item>();
+    private InventoryManager m_InvManager;
+
     [CanBeNull] private GameObject openMenu = null;//maby create a menu class OOP or enum
     void Start()
     {
         m_playerChar = GameObject.FindWithTag("Player").GetComponent<PlayerCharControler>();
+        m_InvManager = GameObject.FindWithTag("Player").GetComponent<InventoryManager>();
     }
 
     public void SwitchScenes(int index)
@@ -51,20 +53,7 @@ public class InGameManager : MonoBehaviour
     }
 
     [CanBeNull]
-    Component GetInvComponent()
-    {
-        RaycastHit hit;
-        Ray ray = new Ray(Camera.main.transform.position, Camera.main.transform.forward);
-        if (Physics.Raycast(ray, out hit, maxInteractDistance, LayerMask.GetMask("Buildings")))
-        {
-            var obj = hit.collider.gameObject.GetComponents(typeof(IInvInteractable));
-            if (obj.Length > 0)
-            {
-                return obj[0];
-            }
-        }
-        return null;
-    }
+
     void Update()
     {
         //TODO move Input.GetKeyDown(Keys.KBuildMenu) to input manager and then disable inputmanager when esc is open
@@ -86,22 +75,12 @@ public class InGameManager : MonoBehaviour
         }
         else if (Input.GetKeyDown(Keys.KInventory))
         {
-            if (GetInvComponent() is IInvInteractable externalInv)
-            {
-                OpenInv(externalInv.GetItems());
-            }
-            else
-            {
-                OpenInv(m_Inventory);
-            }
+            m_InvManager.OnInvOpen();
         }
 
     }
 
-    void OpenInv(List<Item> items)
-    {
-        Debug.Log("Opening Inv");
-    }
+    
 
     
     

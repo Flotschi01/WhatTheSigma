@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 namespace Objects.Abstracts
 {
-    public class Miner : MonoBehaviour, IInvInteractable
+    public class Miner : MonoBehaviour, ITransports, IInvInteractable
     {
         private List<Item> _inventory = new List<Item>();
         public ITransports Next { get; set; }
