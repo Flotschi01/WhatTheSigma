@@ -27,6 +27,10 @@ public class InGameManager : MonoBehaviour
 
     public void SwitchScenes(int index)
     {
+        if (openMenu != null)
+        {
+            ToggleMenu(openMenu);
+        }
         SceneManager.LoadScene(index);
     }
     public void ExitGame()
@@ -75,6 +79,7 @@ public class InGameManager : MonoBehaviour
         }
         else if (Input.GetKeyDown(Keys.KInventory))
         {
+            ToggleMenu(inventory);
             m_InvManager.OnInvOpen();
         }
 
