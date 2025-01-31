@@ -6,6 +6,13 @@ namespace Objects.Abstracts
     {
         private List<Item> _inventory = new List<Item>();
         public ITransports Next { get; set; }
+
+        void Start()
+        {
+            _inventory.Add(new Item(ItemType.IronOre));
+            _inventory.Add(new Item(ItemType.IronOre));
+            _inventory.Add(new Item(ItemType.CopperOre));
+        }
         public void UpdateItems(Item transfer)
         {
             
