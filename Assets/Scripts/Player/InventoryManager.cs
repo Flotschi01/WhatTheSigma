@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 using Objects.Abstracts;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
+using Object = System.Object;
 
 namespace Player
 {
@@ -18,13 +20,25 @@ namespace Player
         {
             foreach (ItemType item in Enum.GetValues(typeof(ItemType)))
             {
-                _sprites.Add(item, Resources.Load<Sprite>("Assets/IMG_Textures/InGameMenus" + item.ToString()));
+                Debug.Log(item.ToString());
+                Texture2D texture = Resources.Load<Texture2D>("ItemSprites/" + item.ToString());
+                Sprite itemSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), 
+                                        new Vector2(0.5f, 0.5f));
+                _sprites.Add(item, itemSprite);
+                
             }
             _inventory = new List<Item>();
-            _inventory.Add(new Item(ItemType.Iron));
-            _inventory.Add(new Item(ItemType.Iron));
-            _inventory.Add(new Item(ItemType.Iron));
-            _inventory.Add(new Item(ItemType.Copper));
+            _inventory.Add(new Item(ItemType.IronOre));
+            _inventory.Add(new Item(ItemType.IronOre));
+            _inventory.Add(new Item(ItemType.CopperOre));
+            _inventory.Add(new Item(ItemType.CopperOre));
+            _inventory.Add(new Item(ItemType.IronOre));
+            _inventory.Add(new Item(ItemType.IronOre));
+            _inventory.Add(new Item(ItemType.IronOre));
+            _inventory.Add(new Item(ItemType.IronOre));
+            _inventory.Add(new Item(ItemType.IronOre));
+            _inventory.Add(new Item(ItemType.IronOre));
+                        _inventory.Add(new Item(ItemType.IronOre));
             _PrefabItem = Resources.Load<GameObject>("Item");
         }
         private void Update()
@@ -64,15 +78,15 @@ namespace Player
         }
         void DisplayInv(List<Item> items)
         {
-            Vector2 pos = inventoryPanel.GetComponent<RectTransform>().anchoredPosition;
             foreach (Transform ka in inventoryPanel.transform)
             {
-                Destroy(ka);
+                Destroy(ka.GameObject());
             }
             for (var index = 0; index < items.Count; index++)
             {
-                Vector2 itemPos = new Vector2(pos.x + index * 50, pos.y + (index % 9)*50);
-                GameObject newItem = Instantiate(_PrefabItem, pos, Quaternion.identity);
+                GameObject newItem = Instantiate(_PrefabItem, Vector3.zero, Quaternion.identity);
+                newItem.transform.SetParent(inventoryPanel.transform);
+                newItem.transform.localPosition = new Vector3( index * 100 + 50 - (index / 9) * 900,  (index / 9)*-100 - 50, 0);
                 newItem.GetComponent<Image>().sprite = _sprites[items[index].Type];
             }
         }

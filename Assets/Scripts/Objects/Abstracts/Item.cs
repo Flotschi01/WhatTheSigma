@@ -5,8 +5,8 @@ namespace Objects.Abstracts
     public enum ItemType
     {
         None,
-        Iron,
-        Copper
+        IronOre,
+        CopperOre
     }
     public class Item
     {
