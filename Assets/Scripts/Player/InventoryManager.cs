@@ -101,7 +101,7 @@ namespace Player
                 }
             }
 
-            lastActiveDAD = _activeDAD;
+            lastActiveDAD = _activeDAD;//nothing works in production
         }
         void InsertItem(IList items, object item, int index)
         {
