@@ -17,7 +17,7 @@ public class InGameManager : MonoBehaviour
     public GameObject inventory;
     private PlayerCharControler m_playerChar;
     private InventoryManager m_InvManager;
-
+    
     [CanBeNull] private GameObject openMenu = null;//maby create a menu class OOP or enum
     void Start()
     {
@@ -63,7 +63,7 @@ public class InGameManager : MonoBehaviour
         //TODO move Input.GetKeyDown(Keys.KBuildMenu) to input manager and then disable inputmanager when esc is open
         if (Input.GetKeyDown(Keys.KEscMenu))
         {
-            if (openMenu!=null)//if there is another menu open
+            if (openMenu)//if there is another menu open
             {
                 ToggleMenu(openMenu);//close the menu
                 openMenu = null;
@@ -80,6 +80,8 @@ public class InGameManager : MonoBehaviour
         else if (Input.GetKeyDown(Keys.KInventory))
         {
             ToggleMenu(inventory);
+            m_InvManager.enabled = !m_InvManager.enabled;
+            
             m_InvManager.OnInvOpen();
         }
 

@@ -4,7 +4,7 @@ namespace Objects.Abstracts
 {
     public interface IInvInteractable
     {
-        public List<Item> GetItems();
-        public void SetItems(List<Item> items);
+        public Dictionary<int,Item> GetItems();
+        public void SetItems(Dictionary<int,Item> items);
     }
 }

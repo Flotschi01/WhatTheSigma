@@ -847,7 +847,7 @@ MonoBehaviour:
   AccelerationSpeedInAir: 25
   SprintSpeedModifier: 2
   KillHeight: -50
-  JumpForce: 0.025
+  JumpForce: 0.05
   m_ExternalVelocity: {x: 0, y: 0, z: 0}
 --- !u!114 &219586315
 MonoBehaviour:
@@ -919,7 +919,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 219586312}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 333cfb0d94664c11a7b669922b4738d1, type: 3}
   m_Name: 

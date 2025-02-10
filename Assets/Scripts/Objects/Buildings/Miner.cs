@@ -1,17 +1,19 @@
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEditor;
+
 namespace Objects.Abstracts
 {
     public class Miner : MonoBehaviour, ITransports, IInvInteractable
     {
-        private List<Item> _inventory = new List<Item>();
+        private Dictionary<int,Item> _inventory = new Dictionary<int,Item>();
         public ITransports Next { get; set; }
 
         void Start()
         {
-            _inventory.Add(new Item(ItemType.IronOre));
-            _inventory.Add(new Item(ItemType.IronOre));
-            _inventory.Add(new Item(ItemType.CopperOre));
+            _inventory.Add(0, new Item(ItemType.IronOre));
+            _inventory.Add(1, new Item(ItemType.IronOre));
+            _inventory.Add(2, new Item(ItemType.CopperOre));
         }
         public void UpdateItems(Item transfer)
         {
@@ -19,12 +21,12 @@ namespace Objects.Abstracts
             Next?.UpdateItems(transfer);
         }
 
-        public List<Item> GetItems()
+        public Dictionary<int,Item> GetItems()
         {
             return _inventory;
         }
 
-        public void SetItems(List<Item> items)
+        public void SetItems(Dictionary<int,Item> items)
         {
             _inventory = items;
         }

@@ -14,43 +14,46 @@ namespace Player
     public class InventoryManager : MonoBehaviour
     {
         public float maxInteractDistance;
-        private List<Item> _inventory = new List<Item>(81);
-        public GameObject inventoryPanel;
-        public GameObject externalPanel;
+        private Dictionary<int,Item> _inventory = new(81); //only used in OnInvOpen & OnInvClose
+        public GameObject inventoryPanel; //the gameobject of the inv square
+        public GameObject externalPanel;  //the gameobject of the inv square
+        [CanBeNull] private IInvInteractable m_ExternalInventory;//the inv class script of the target;
+        
+        private Dictionary<int, GameObject> _intItems = new (81);//GUI Items for dragAndDrop
+        private Dictionary<int, GameObject> _extItems = new (81);//GUI Items for dragAndDrop
 
-        private List<GameObject> _intItems = new List<GameObject>(81);
-        private List<GameObject> _extItems = new List<GameObject>(81);
+        private GameObject _activeDAD;//active Drag and Drop
+        private int _oldDADindex;//old Drag and Drop item index 
+        private GameObject _oldDADPanel; // panel from where the item is being dragged
+        
+        private GameObject _PrefabItem;//GUI Item Prefab
+        private Dictionary<ItemType, Sprite> _TypeToSprites = new();//Table to look up the corresponding sprite
+                                                                    // to optimize runtime because resources.load :(
 
-        private GameObject _activeDAD;
-        private int _oldDADindex;
-        private GameObject _oldDADPanel;
-        
-        private GameObject _PrefabItem;
-        private Dictionary<ItemType, Sprite> _sprites = new Dictionary<ItemType, Sprite>();
         
         
-        void Start()
+        void Awake() // i bin a viech
         {
             foreach (ItemType item in Enum.GetValues(typeof(ItemType)))
             {
                 Texture2D texture = Resources.Load<Texture2D>("ItemSprites/" + item.ToString());
                 Sprite itemSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height),
                     new Vector2(0.5f, 0.5f));
-                _sprites.Add(item, itemSprite);
+                _TypeToSprites.Add(item, itemSprite);
             }
-            _inventory = new List<Item>(81)
+
+            _inventory = new Dictionary<int,Item>(81)
             {
-                new Item(ItemType.IronOre),
-                new Item(ItemType.IronOre),
-                new Item(ItemType.CopperOre),
-                new Item(ItemType.CopperOre),
-                new Item(ItemType.IronOre),
-                new Item(ItemType.IronOre),
-                new Item(ItemType.IronOre),
-                new Item(ItemType.IronOre),
-                new Item(ItemType.IronOre),
-                new Item(ItemType.IronOre),
-                new Item(ItemType.None)
+                {0,new Item(ItemType.IronOre)},
+                {1,new Item(ItemType.IronOre)},
+                {2,new Item(ItemType.IronOre)},
+                {3,new Item(ItemType.IronOre)},
+                {4,new Item(ItemType.CopperOre)},
+                {5,new Item(ItemType.IronOre)},
+                {6,new Item(ItemType.IronOre)},
+                {7,new Item(ItemType.IronOre)},
+                {8,new Item(ItemType.None)},
+                {9,new Item(ItemType.CopperOre)},
             };
             _PrefabItem = Resources.Load<GameObject>("Item");
         }
@@ -65,13 +68,13 @@ namespace Player
             {
                 int indexInvPanel = GetIndexClickedItem(inventoryPanel.GetComponent<RectTransform>());
                 int indexExtPanel = GetIndexClickedItem(externalPanel.GetComponent<RectTransform>());
-
-                if (indexInvPanel != -1)
+                Debug.Log(indexInvPanel);
+                if (indexInvPanel != -1 && (_intItems.ContainsKey(indexInvPanel)||stop))
                 {
                     _activeDAD = start ? _intItems[indexInvPanel] : null;
                     _oldDADindex = start ? indexInvPanel : _oldDADindex;
                     _oldDADPanel = start ? inventoryPanel : _oldDADPanel;
-                }else if(indexExtPanel != -1)
+                }else if(indexExtPanel != -1 && (_extItems.ContainsKey(indexExtPanel)||stop))
                 {
                     _activeDAD = start ? _extItems[indexExtPanel] : null;
                     _oldDADindex = start ? indexExtPanel : _oldDADindex;
@@ -84,42 +87,55 @@ namespace Player
                 _activeDAD.GetComponent<RectTransform>().position = Input.mousePosition;
             }
 
-            if (!_activeDAD && lastActiveDAD)
+            if ((!_activeDAD) && lastActiveDAD)
             {
                 //Handle snapping in place here
-                int index = GetIndexClickedItem(inventoryPanel.GetComponent<RectTransform>());
-                Debug.Log(index + "old index:" + _oldDADindex);
-                lastActiveDAD.GetComponent<RectTransform>().localPosition = GetPositionFromIndex(index, 
-                    new Vector2(9,9), inventoryPanel.GetComponent<RectTransform>());
-                //Handle managing inventories here
-                if (_oldDADPanel == inventoryPanel)
+                
+                RectTransform activeRect = inventoryPanel.GetComponent<RectTransform>();
+                int index = GetIndexClickedItem(activeRect);
+                if (index == -1)
                 {
-                    InsertItem(_intItems, _intItems[_oldDADindex], index);
-                    _intItems[_oldDADindex] = index == _oldDADindex ? _intItems[_oldDADindex] : null;
-                    InsertItem(_inventory, _inventory[_oldDADindex], index);
-                    _inventory[_oldDADindex] = index == _oldDADindex ? _inventory[_oldDADindex] : null;;
+                    activeRect = externalPanel.GetComponent<RectTransform>();
+                    index = GetIndexClickedItem(activeRect);
+                    if (index == -1)
+                    {
+                        Debug.Log("outOfInventory");
+                        return;
+                    }
+                }
+                while (_intItems.ContainsKey(index) || _extItems.ContainsKey(index))
+                {
+                    index++;
+                }
+                Debug.Log(index + "old index:" + _oldDADindex);
+                
+                lastActiveDAD.transform.SetParent(activeRect.transform);
+                lastActiveDAD.GetComponent<RectTransform>().localPosition = GetPositionFromIndex(index, 
+                    new Vector2(9,9), activeRect);
+                //Handle managing inventories here
+                if (_oldDADPanel == inventoryPanel && index != _oldDADindex)
+                {
+                    _intItems.Add(index, _intItems[_oldDADindex]);
+                    _intItems.Remove(_oldDADindex);
+                }
+                else if (_oldDADPanel != inventoryPanel && index != _oldDADindex)
+                {
+                    if (_oldDADPanel == inventoryPanel)
+                    {
+                        _extItems.Add(index, _intItems[_oldDADindex]);
+                        _intItems.Remove(_oldDADindex);
+                    }
                 }
             }
 
             lastActiveDAD = _activeDAD;//nothing works in production
         }
-        void InsertItem(IList items, object item, int index)
-        {
-            try
-            {
-                items[index] = item;
-                return;
-            }
-            catch
-            {
-                for (int i = items.Count-1; i < index-1; i++)
-                {
-                    items.Add(null);
-                }
-                items.Add(item);
-            }
 
-        }
+        /// <summary>
+        /// custom method for my dad gui, takes the index of the item at the current mouse position
+        /// </summary>
+        /// <param name="rectTransform">the panel of the drag and drop action</param>
+        /// <returns>-1 when not in rectTransform, normally the index corrosponding to the position</returns>
         int GetIndexClickedItem(RectTransform rectTransform)
         {
             if (RectTransformUtility.RectangleContainsScreenPoint(rectTransform, Input.mousePosition))
@@ -176,27 +192,45 @@ namespace Player
 
         public void OnInvOpen()
         {
-            if (GetInvComponent() is IInvInteractable externalInv)
+            m_ExternalInventory = GetInvComponent() as IInvInteractable;
+            if (m_ExternalInventory != null)
             {
                 _extItems.Clear();
-                _extItems = DisplayInv(externalInv.GetItems(),new Vector2(9, 9), externalPanel);
+                externalPanel.transform.parent.gameObject.SetActive(true);
+                _extItems = DisplayInv(m_ExternalInventory.GetItems(),new Vector2(9, 9), externalPanel);
             }
             else
             {
                 _intItems.Clear();
+                externalPanel.transform.parent.gameObject.SetActive(false);
                 _intItems = DisplayInv(_inventory, new Vector2(9, 9), inventoryPanel);
             }
         }
 
+        public void OnInvClose()
+        {   
+            m_ExternalInventory?.SetItems(getItemsFromGUI(_extItems));
+            _inventory = getItemsFromGUI(_intItems);
+        }
+
+        private Dictionary<int, Item> getItemsFromGUI(Dictionary<int, GameObject> GUIInventory)
+        {
+            Dictionary<int, Item> ret = new Dictionary<int, Item>();
+            foreach (var item in GUIInventory)
+            {
+                ret.Add(item.Key, item.Value.GetComponent<AbstractItemHolder>().item);
+            }
+            return ret;//ich habe noch nicht auf den anderen panel als child hinzugefügt
+        }
         /// <summary>
         /// 
         /// </summary>
         /// <param name="items">the items (abstract) to display</param>
         /// <param name="dimensions">has to be ints, bsp. 9 by 9 itemgrid</param>
         /// <param name="panel">The object that contains the items as children, standard: external</param>
-        List<GameObject> DisplayInv(List<Item> items, Vector2 dimensions, GameObject panel)
+        Dictionary<int,GameObject> DisplayInv(Dictionary<int, Item> items, Vector2 dimensions, GameObject panel)
         {
-            List<GameObject> ret = new List<GameObject>();
+            Dictionary<int,GameObject> ret = new ();
             foreach (Transform ka in panel.transform)//delete every item
             {
                 Destroy(ka.GameObject());
@@ -209,15 +243,17 @@ namespace Player
             {
                 throw new ArgumentOutOfRangeException();
             }
-            for (var index = 0; index < items.Count; index++)   
+
+            foreach (var kv in items)
             {
                 GameObject newItem = Instantiate(_PrefabItem, Vector3.zero, Quaternion.identity);
                 newItem.transform.SetParent(panel.transform);
                 
                 newItem.transform.localPosition = GetPositionFromIndex(
-                                                    index, dimensions, panel.GetComponent<RectTransform>());
-                newItem.GetComponent<Image>().sprite = _sprites[items[index].Type];
-                ret.Add(newItem);
+                    kv.Key, dimensions, panel.GetComponent<RectTransform>());
+                newItem.GetComponent<Image>().sprite = _TypeToSprites[kv.Value.Type];
+                newItem.GetComponent<AbstractItemHolder>().item = kv.Value;
+                ret.Add(kv.Key, newItem);
             }
             return ret;
         }
